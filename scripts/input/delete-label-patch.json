@@ -1,0 +1,6 @@
+[
+  {
+    "op": "remove",
+    "path": "/spec/template/metadata/labels/secure"    
+  }
+]

@@ -1,0 +1,88 @@
+
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: denier-tester
+  namespace: default
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: denier-tester
+  namespace: default
+rules:
+  - apiGroups: ["apps", "", "*"]
+    resources: ["*"]
+    verbs: ["*"]
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: denier-tester
+subjects:
+- kind: ServiceAccount
+  name: denier-tester
+  namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: denier-tester
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: denier-tester
+spec:
+  schedule: "*/5 * * * *"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      template:
+        metadata:
+          labels:
+            app: denier-tester
+        spec:
+          serviceAccountName: denier-tester
+          containers:
+            - name: tester
+              image: piotrmsc/denier-issue:0.0.1
+              imagePullPolicy: Always
+          restartPolicy: Never
+---
+
+# apiVersion: extensions/v1beta1
+# kind: Deployment
+# metadata:  
+#   labels:
+#     run: denier
+#   name: denier
+#   namespace: default
+# spec:  
+#   replicas: 1
+#   revisionHistoryLimit: 2
+#   selector:
+#     matchLabels:
+#       run: denier  
+#   template:
+#     metadata:
+#       creationTimestamp: null
+#       labels:
+#         run: denier
+#     spec:
+#       containers:
+#       - image: piotrmsc/denier-issue:0.0.1
+#         imagePullPolicy: Always
+#         name: denier
+#         resources: {}
+#         terminationMessagePath: /dev/termination-log
+#         terminationMessagePolicy: File
+#       serviceAccountName: denier-tester  
+#       dnsPolicy: ClusterFirst
+#       # restartPolicy: Never
+#       schedulerName: default-scheduler
+#       securityContext: {}
+#       terminationGracePeriodSeconds: 30
+

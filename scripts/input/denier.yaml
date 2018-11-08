@@ -1,0 +1,24 @@
+apiVersion: "config.istio.io/v1alpha2"
+kind: denier
+metadata:
+  name: denierhandler
+spec:
+  status:
+    code: 7
+    message: Not allowed
+---
+apiVersion: "config.istio.io/v1alpha2"
+kind: checknothing
+metadata:
+  name: deny
+spec:
+---
+apiVersion: "config.istio.io/v1alpha2"
+kind: rule
+metadata:
+  name: deny
+spec:
+  match: destination.labels["app"] == "helloworld" && destination.labels["secure"] == "true"
+  actions:
+  - handler: denierhandler.denier
+    instances: [ deny.checknothing ]
